@@ -28,6 +28,10 @@ public class SeoulPhysicalFacade {
      * @param max 페이징 끝
      * @param classNm 클래스명 ( 테니스, 풋살 )
      */
+    public <T> T  getReservationList(String classNm, Class<T> clazz) {
+        return getReservationList("json", 1, 1000, classNm, clazz);
+    }
+
     public <T> T  getReservationList(int min, int max, String classNm, Class<T> clazz) {
         return getReservationList("json", min, max, classNm, clazz);
     }

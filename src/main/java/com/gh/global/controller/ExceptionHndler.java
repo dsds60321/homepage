@@ -14,6 +14,6 @@ public class ExceptionHndler {
     public ResponseEntity<ApiResponse> handleAll(RuntimeException e) {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ApiResponseCode.INTERNAL_SERVER_ERROR));
+                .body(ApiResponse.ERROR(ApiResponseCode.INTERNAL_SERVER_ERROR));
     }
 }

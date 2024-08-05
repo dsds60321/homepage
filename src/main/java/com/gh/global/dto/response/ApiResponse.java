@@ -14,7 +14,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
-    public static <T> ApiResponse<T> success(T data) {
+    public static <T> ApiResponse<T> SUCCESS(T data) {
         return ApiResponse.<T>builder()
                 .code(ApiResponseCode.SUCCESS.getCode())
                 .message(ApiResponseCode.SUCCESS.getMessage())
@@ -22,7 +22,16 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(ApiResponseCode responseCode) {
+    public static <T> ApiResponse<T> NOT_FOUND(T data) {
+        return ApiResponse.<T>builder()
+                .code(ApiResponseCode.NOT_FOUND.getCode())
+                .message(ApiResponseCode.NOT_FOUND.getMessage())
+                .data(data)
+                .build();
+    }
+
+
+    public static <T> ApiResponse<T> ERROR(ApiResponseCode responseCode) {
         return ApiResponse.<T>builder()
                 .code(responseCode.getCode())
                 .message(responseCode.getMessage())

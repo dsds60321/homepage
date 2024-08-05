@@ -22,9 +22,14 @@ import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 @Slf4j
 public class WebClientUtil {
 
+    private static final int MAX_MEMORY_SIZE = 10 * 1024 * 1024;
+
     public <T> T getRequest(String uri, Class<T> returnClass) {
-        WebClient.RequestHeadersSpec<?> request = WebClient.builder().baseUrl(uri)
-                .build().get()
+        WebClient.RequestHeadersSpec<?> request = WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
+                .build()
+                .get()
                 .accept(MediaType.APPLICATION_JSON)
                 .acceptCharset(UTF_8);
 
@@ -32,7 +37,9 @@ public class WebClientUtil {
     }
 
     public <T> T getRequest(String uri, Map<String,String> headers , Class<T> returnClass) {
-        WebClient.RequestHeadersSpec<?> request = WebClient.builder().baseUrl(uri)
+        WebClient.RequestHeadersSpec<?> request = WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
                 .build().get()
                 .headers(httpHeaders -> httpHeaders.setAll(headers))
                 .accept(MediaType.APPLICATION_JSON)
@@ -43,7 +50,9 @@ public class WebClientUtil {
 
 
     public <T> T getRequest(String uri, MultiValueMap<String,String> params , Map<String,String> headers , Class<T> returnClass) {
-        WebClient.RequestHeadersSpec<?> request = WebClient.builder().baseUrl(uri)
+        WebClient.RequestHeadersSpec<?> request = WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
                 .build().get()
                 .uri(uriBuilder -> uriBuilder.queryParams(params).build())
                 .headers(httpHeaders -> httpHeaders.setAll(headers))
@@ -54,7 +63,9 @@ public class WebClientUtil {
     }
 
     public <T> T sendFormPostWithParams(String uri, Map<String,String> headers, MultiValueMap<String,String> params, Class<T> returnClass) {
-        return WebClient.builder().baseUrl(uri)
+        return WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
                 .build().post()
                 .uri(uriBuilder -> uriBuilder.queryParams(params).build())
                 .headers(httpHeaders -> httpHeaders.setAll(headers))
@@ -67,7 +78,9 @@ public class WebClientUtil {
     public <T> T sendFormPostWithBearer(String uri, String bearer, Object body, Class<T> returnClass) {
         MultiValueMap<String, String> formData = convertToMultiValueMap(new ObjectMapper(), body);
 
-        return WebClient.builder().baseUrl(uri)
+        return WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
                 .build().post()
                 .contentType(APPLICATION_FORM_URLENCODED)
                 .headers(httpHeaders -> httpHeaders.setBearerAuth(bearer))
@@ -79,7 +92,9 @@ public class WebClientUtil {
 
 
     public <T> T sendFormPostRequest(String uri, Object body, Class<T> returnClass) {
-        return WebClient.builder().baseUrl(uri)
+        return WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
                 .build().post()
                 .contentType(APPLICATION_FORM_URLENCODED)
                 .accept(MediaType.APPLICATION_JSON)
