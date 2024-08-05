@@ -1,0 +1,19 @@
+package com.gh.global.controller;
+
+import com.gh.global.dto.response.ApiResponse;
+import com.gh.global.dto.response.ApiResponseCode;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class ExceptionHndler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse> handleAll(RuntimeException e) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ApiResponseCode.INTERNAL_SERVER_ERROR));
+    }
+}
