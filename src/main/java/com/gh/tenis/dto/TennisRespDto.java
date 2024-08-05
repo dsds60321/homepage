@@ -1,17 +1,24 @@
 package com.gh.tenis.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
+@Getter
 public class TennisRespDto {
+
+    public TennisRespDto() {}
+
 
     @JsonProperty("ListPublicReservationSport")
     private ListPublicReservationSport listPublicReservationSport;
 
-    @Data
+    @Getter
+    @NoArgsConstructor
     static class ListPublicReservationSport{
 
         @JsonProperty("list_total_count")
@@ -26,7 +33,8 @@ public class TennisRespDto {
 
 
 
-    @Data
+    @Getter
+    @NoArgsConstructor
     static class Result {
 
         @JsonProperty("CODE")
@@ -36,7 +44,8 @@ public class TennisRespDto {
         public String message;
     }
 
-    @Data
+    @Getter
+    @NoArgsConstructor
     static class Row {
         @JsonProperty("GUBUN")
         private String gubun;

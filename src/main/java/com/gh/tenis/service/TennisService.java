@@ -6,10 +6,7 @@ import com.gh.tenis.dto.TennisRespDto;
 import com.gh.util.DateUtil;
 import com.gh.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +25,7 @@ public class TennisService {
             } else {
                 tennisList = seoulPhysicalFacade.getReservationList(1, 10, "테니스장", TennisRespDto.class);
                 String listToJson = new ObjectMapper().writeValueAsString(tennisList);
-                redisUtil.set(getRedisKey(), listToJson, true);
+                redisUtil.set(getRedisKey(), tennisList, true);
             }
         } catch (Exception e) {
             e.getMessage();

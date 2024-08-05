@@ -1,5 +1,6 @@
 package com.gh.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
@@ -19,7 +20,8 @@ public class RedisUtil {
 
     public void set(String key, Object value, boolean isExpiredDay) {
         if (isExpiredDay) {
-            redisTemplate.opsForValue().set(key, value, DateUtil.getSecondsUntilMidnight());
+//            redisTemplate.opsForValue().set(key, value, DateUtil.getSecondsUntilMidnight());
+            redisTemplate.opsForValue().set(key, value);
         } else {
             redisTemplate.opsForValue().set(key, value);
         }
@@ -34,7 +36,15 @@ public class RedisUtil {
     }
 
     public <T> T get(String key, Class<T> clazz) {
-        return clazz.cast(redisTemplate.opsForValue().get(key));
+        Object value = redisTemplate.opsForValue().get(key);
+
+        if (value == null) {
+            return null;
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return objectMapper.convertValue(value, clazz);
     }
 
     public void delete(String key) {

@@ -23,7 +23,7 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setDefaultSerializer(RedisSerializer.json());
         redisTemplate.setKeySerializer(new StringRedisSerializer());   // Key: String
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(String.class));  // Value: 직렬화에 사용할 Object 사용하기
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));  // Value: 직렬화에 사용할 Object 사용하기
         return redisTemplate;
     }
 
