@@ -1,5 +1,7 @@
 package com.gh.util;
 
+import org.springframework.util.StringUtils;
+
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +10,46 @@ import java.util.List;
 import java.util.Map;
 
 public class ParamUtil {
+
+    public static void main(String[] args) {
+        System.out.println(getQueryString(Map.of("KEY", "3213123", "Type", "json", "pIndex", String.valueOf(1), "pSize", String.valueOf(1000))));
+
+
+    }
+
+    /**
+     * queryString 응답
+     *
+     * @param params
+     * @return
+     */
+    public static String getQueryString(Map<String, String> params) {
+        return getQueryString("", params);
+    }
+
+    public static String getQueryString(String baseUrl, Map<String, String> params) {
+        StringBuilder url;
+        // url 기본 설정
+        if (StringUtils.hasText(baseUrl)) {
+            baseUrl = baseUrl.endsWith("?") ? baseUrl : baseUrl + "?";
+            url = new StringBuilder(baseUrl);
+        } else {
+            url = new StringBuilder();
+        }
+
+        int size = params.size();
+        int index = 0;
+
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            url.append(entry.getKey()).append("=").append(entry.getValue());
+            if (index++ < size - 1) {
+                url.append("&");
+            }
+        }
+
+        return url.toString();
+    }
+
 
     // Request TO QueryString
     public static <T> String objectToQueryString(T object) {

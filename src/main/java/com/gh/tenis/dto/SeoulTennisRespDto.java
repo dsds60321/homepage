@@ -1,14 +1,19 @@
 package com.gh.tenis.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class TennisRespDto {
+public class SeoulTennisRespDto {
 
     @JsonProperty("ListPublicReservationSport")
     private ListPublicReservationSport listPublicReservationSport;
@@ -31,6 +36,7 @@ public class TennisRespDto {
     @Getter
     @NoArgsConstructor
     static class Result {
+
         @JsonProperty("CODE")
         private String code;
 
@@ -41,65 +47,99 @@ public class TennisRespDto {
     @Getter
     @NoArgsConstructor
     static class Row {
-        @JsonProperty("GUBUN")
-        private String gubun;
 
-        @JsonProperty("SVCID")
-        private String svcId;
-
+        // 대분류 : 체육시설
         @JsonProperty("MAXCLASSNM")
-        private String maxClassNm;
+        private String majorCategory;
 
+        // 소분류 : 테니스장
         @JsonProperty("MINCLASSNM")
-        private String minClassNm;
+        private String subCategory;
 
+        // 예약상태
         @JsonProperty("SVCSTATNM")
-        private String svcStatNm;
+        private String bookingStatus;
 
+        // 서비스명
         @JsonProperty("SVCNM")
-        private String svcNm;
+        private String svcName;
 
+        // 유료 or 무료
         @JsonProperty("PAYATNM")
-        private String payAtNm;
+        private String paymentType;
 
+        // 장소
         @JsonProperty("PLACENM")
-        private String placeNm;
+        private String place;
 
+        // 서비스 대상
         @JsonProperty("USETGTINFO")
-        private String useTgtInfo;
+        private String svcTarget;
 
+        // 서비스 url
         @JsonProperty("SVCURL")
         private String svcUrl;
 
-        @JsonProperty("X")
-        private double x;
-
-        @JsonProperty("Y")
-        private double y;
-
-        @JsonProperty("SVCOPNBGNDT")
-        private String svcOpnBgnDt;
-
-        @JsonProperty("SVCOPNENDDT")
-        private String svcOpnEndDt;
-
+        // 서비스 첫 오픈일시
         @JsonProperty("RCPTBGNDT")
-        private String rcptBgnDt;
+        private String svcOpenDate;
 
+        // 서비스 종료일시
         @JsonProperty("RCPTENDDT")
-        private String rcptEndDt;
+        private String svcCloseDate;
 
+        // 영업 오픈 시간
+        @JsonProperty("V_MIN")
+        private String svcOpenTime;
+
+        // 영업 종료 시간
+        @JsonProperty("V_MAX")
+        private String svcCloseTime;
+
+        // 지역명 : 송파구
         @JsonProperty("AREANM")
-        private String areaNm;
+        private String district;
 
+        // 이미지 url
         @JsonProperty("IMGURL")
         private String imgUrl;
 
+        // 상세정보
         @JsonProperty("DTLCONT")
-        private String dtlCont;
+        private String detailInfo;
+
+        // 전화번호
+        @JsonProperty("TELNO")
+        private String telNo;
+
+        // 취소기간 기준일
+        @JsonProperty("REVSTDDAYNM")
+        private String rfdBaseDay;
+
+        // rfdDay
+        @JsonProperty("REVSTDDAY")
+        private String rfdDay;
     }
 
-    public List<Row> getRows() {
-        return listPublicReservationSport != null ? listPublicReservationSport.getRows() : null;
+
+    /**
+     * 정렬 기본 조건 예약 상태
+     * @param isBookingSort : 예약 상태 정렬 여부
+     * @return
+     */
+    public List<Row> getRows(boolean isBookingSort) {
+        if (listPublicReservationSport != null) {
+
+            List<Row> rows = listPublicReservationSport.getRows();
+
+            if (rows != null && isBookingSort) {
+                rows.sort(Comparator.comparing(Row::getBookingStatus, Comparator.comparingInt(
+                        status -> status.equals("접수중") ? 0 : 1
+                )));
+            }
+
+            return rows;
+        }
+        return null;
     }
 }

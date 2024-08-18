@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -23,6 +24,30 @@ import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 public class WebClientUtil {
 
     private static final int MAX_MEMORY_SIZE = 10 * 1024 * 1024;
+
+    public <T> T getRequestNoneAccept(String uri, Class<T> returnClass) {
+        WebClient.RequestHeadersSpec<?> request = WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
+                .baseUrl(uri)
+                .build()
+                .get();
+
+        String tmpResponse = request.exchangeToMono(response -> response.bodyToMono(String.class)).block();
+
+        if (!StringUtils.hasText(tmpResponse)) {
+            return null;
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            return objectMapper.readValue(tmpResponse, returnClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public <T> T getRequest(String uri, Class<T> returnClass) {
         WebClient.RequestHeadersSpec<?> request = WebClient.builder()
