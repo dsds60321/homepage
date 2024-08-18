@@ -6,6 +6,7 @@ import com.gh.tenis.service.TennisService;
 import com.gh.util.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/tennis")
+@Slf4j
 public class TennisController {
 
     private final TennisService tennisService;
@@ -27,6 +29,10 @@ public class TennisController {
     public ResponseEntity<ApiResponse> tennis(HttpServletResponse response) {
         SeoulTennisRespDto reservationList = tennisService.getReservationList();
 
+        log.info("HIHI");
+        log.debug("HIHI");
+        log.warn("HIHI");
+        log.error("HIHI");
 
         if (reservationList == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.NOT_FOUND("예약 목록이 없습니다."));

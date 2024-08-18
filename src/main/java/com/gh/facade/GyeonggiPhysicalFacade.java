@@ -1,6 +1,5 @@
 package com.gh.facade;
 
-import com.gh.util.CommonUtil;
 import com.gh.util.ParamUtil;
 import com.gh.util.WebClientUtil;
 import lombok.RequiredArgsConstructor;
