@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.gh'
-version = '0.0.1-SNAPSHOT'
+version = 'v1'
 
 java {
     toolchain {
@@ -24,29 +24,31 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // 로그백
     implementation 'ch.qos.logback:logback-classic:1.5.6'
     implementation 'ch.qos.logback:logback-core:1.5.6'
 
-
     compileOnly 'org.projectlombok:lombok'
-
-    runtimeOnly 'com.h2database:h2'  // H2 데이터베이스 의존성 추가
-
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+task buildReact(type: Exec) {
+    workingDir '../front'
+    commandLine 'npm', 'run', 'build'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+
+build.dependsOn buildReact

@@ -29,11 +29,6 @@ public class TennisController {
     public ResponseEntity<ApiResponse> tennis(HttpServletResponse response) {
         SeoulTennisRespDto reservationList = tennisService.getReservationList();
 
-        log.info("HIHI");
-        log.debug("HIHI");
-        log.warn("HIHI");
-        log.error("HIHI");
-
         if (reservationList == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.NOT_FOUND("예약 목록이 없습니다."));
         }
