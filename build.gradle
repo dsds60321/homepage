@@ -41,14 +41,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-task buildReact(type: Exec) {
-    workingDir '../front'
-    commandLine 'npm', 'run', 'build'
-}
-
 tasks.named('test') {
     useJUnitPlatform()
 }
 
 
-build.dependsOn buildReact
