@@ -41,5 +41,9 @@
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />
         </root>
+        <logger name="com.gh" level="ERROR" additivity="false">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE" />
+        </logger>
     </springProfile>
 </configuration>
