@@ -2,8 +2,11 @@ package com.gh.util;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -63,5 +66,24 @@ public class DateUtil {
         seconds = tomorrow.atZone(ZoneId.systemDefault()).toEpochSecond() - now.atZone(ZoneId.systemDefault()).toEpochSecond();
 
         return seconds;
+    }
+
+    /**
+     * 금년 금월에 일자 리스트 출력
+     * @return
+     */
+    public static List<String> getNowDays() {
+        List<String> days = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        int year = today.getYear(); // 현재 년도
+        Month month = today.getMonth(); // 현재 월
+        int daysInMonth = month.length(today.isLeapYear()); // 해당 월의 일수 계산
+
+        // yyyyMMdd 형식으로 출력
+        for (int day = 1; day <= daysInMonth; day++) {
+            days.add(String.format("%04d%02d%02d", year, month.getValue(), day));
+        }
+
+        return days;
     }
 }

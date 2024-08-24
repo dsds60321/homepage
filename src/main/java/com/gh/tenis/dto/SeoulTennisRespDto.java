@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Getter
@@ -46,7 +47,11 @@ public class SeoulTennisRespDto {
 
     @Getter
     @NoArgsConstructor
-    static class Row {
+    public static class Row {
+
+        // ServiceID : url 크롤링에 사용함
+        @JsonProperty("SVCID")
+        private String svcId;
 
         // 대분류 : 체육시설
         @JsonProperty("MAXCLASSNM")
@@ -119,6 +124,17 @@ public class SeoulTennisRespDto {
         // rfdDay
         @JsonProperty("REVSTDDAY")
         private String rfdDay;
+
+        private List<LinkedHashMap<String, Boolean>> bookingList;
+
+        public void setBookingList(List<LinkedHashMap<String, Boolean>> bookingList) {
+            this.bookingList = bookingList;
+        }
+
+        // 예약 가능 여부
+        public boolean isBooking() {
+            return this.getBookingStatus().equals("접수중");
+        }
     }
 
 

@@ -20,10 +20,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/");
     }
 
-//    @Override
-//    public void addCorsMappings(CorsRegistry registry) {
-//        registry.addMapping("/**")
-//                .allowedOrigins("http://localhost:3000")
-//                .allowedMethods("POST", "GET", "OPTION", "PUT", "DELETE");
-//    }
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("POST", "GET", "OPTION", "PUT", "DELETE");
+    }
 }
