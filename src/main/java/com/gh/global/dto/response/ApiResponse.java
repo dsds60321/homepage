@@ -22,6 +22,14 @@ public class ApiResponse<T> {
                 .build();
     }
 
+    public static <T> ApiResponse<T> BAD_REQUEST() {
+        return ApiResponse.<T>builder()
+                .code(ApiResponseCode.BAD_REQUEST.getCode())
+                .message(ApiResponseCode.BAD_REQUEST.getMessage())
+                .data(null)
+                .build();
+    }
+
     public static <T> ApiResponse<T> NOT_FOUND(T data) {
         return ApiResponse.<T>builder()
                 .code(ApiResponseCode.NOT_FOUND.getCode())
