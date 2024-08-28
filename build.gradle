@@ -84,3 +84,27 @@ tasks.named('test') {
 jar {
     enabled = false
 }
+
+// Vite 빌드 후 정적 파일 복사 작업
+task copyViteBuild(type: Copy) {
+    from "${projectDir}/src/main/front/dist" // Vite 빌드 경로
+    into "${projectDir}/src/main/resources/static" // Spring Boot 정적 파일 경로
+}
+
+// Vite 빌드 작업
+task buildVite(type: Exec) {
+    workingDir "${projectDir}/src/main/front" // Vite 프로젝트 경로
+    commandLine 'npm', 'run', 'build' // Vite 빌드 명령어
+}
+
+// 전체 빌드 시 Vite 빌드 작업 실행
+build.dependsOn(buildVite)
+
+// copyViteBuild 작업이 processResources의 입력으로 사용되도록 설정
+tasks.named('processResources') {
+    dependsOn(copyViteBuild) // processResources 작업 전에 copyViteBuild 작업 실행
+}
+
+bootJar {
+    dependsOn(copyViteBuild) // bootJar 작업 전에 copyViteBuild 작업 실행
+}

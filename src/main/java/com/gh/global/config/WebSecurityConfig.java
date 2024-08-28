@@ -40,7 +40,7 @@ public class WebSecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // 세션 필요 시 생성
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/index.html", "/auth/**").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers("/dashboard", "/index.html", "/auth/**","/auth/login", "/assets/**", "/static/**", "favicon.ico").permitAll() // 인증 없이 접근 가능
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // 정적 리소스 접근 허용
                         .anyRequest().authenticated()) // 모든 요청 허용
                 .exceptionHandling(exceptionHandling ->
