@@ -1,95 +1,109 @@
 package com.gh.auth.service;
 
-import com.gh.auth.dto.SignInReqDto;
-import com.gh.auth.dto.SignUpReqDto;
-import com.gh.auth.dto.TokenRequestDto;
-import com.gh.auth.dto.TokenResponseDto;
+import com.gh.auth.dto.AuthRequestDTO;
+import com.gh.auth.dto.CustomUserDetail;
+import com.gh.auth.dto.UserRequestDTO;
+import com.gh.auth.entity.Auth;
+import com.gh.auth.entity.User;
 import com.gh.auth.entity.UserRole;
 import com.gh.auth.provider.JwtProvider;
+import com.gh.auth.repository.AuthRepository;
 import com.gh.auth.repository.UserRepository;
 import com.gh.global.dto.response.ApiResponse;
-import com.gh.global.util.CommonUtil;
-import com.gh.global.util.DateUtil;
-import com.gh.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class AuthService {
 
-    @Value("${jwt.refresh-time}")
-    private long REFRESH_TIMEOUT;   // 7D
-
-    private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
-    private final RedisUtil redisUtil;
-    private final StringRedisTemplate stringRedisTemplate;
-    private static final String GUEST_REDIS_KEY = "%s_%s_%s";
-
-    public ResponseEntity<?> signUp(SignUpReqDto dto) {
-        String userId = dto.getId();
-        boolean isUser = userRepository.existsUserById(userId);
-
-        if (isUser) {
-            return ApiResponse.BAD_REQUEST();
-        }
+    private final AuthRepository authRepository;
+    private final JwtProvider jwtProvider;
+    private final PasswordEncoder passwordEncoder;
 
 
-        return ResponseEntity.ok("");
+    /** 회원가입 */
+    @Transactional
+    public ResponseEntity<?> signup(UserRequestDTO requestDto) {
+        // SAVE USER ENTITY
+        requestDto.setUserRole(UserRole.ROLE_USER);
+        requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        this.userRepository.save(requestDto.toEntity());
+
+        return ApiResponse.SUCCESS(requestDto);
     }
 
     // 로그인
-    public ResponseEntity<?> signIn(SignInReqDto requestDto) {
-        UserRole role = requestDto.getUserRole();
-        if (role.equals(UserRole.GUEST)) {
-            log.info("GUEST_LOGIN : {} ", role);
-            // 중복되지 않기 위해 token명 생성
+    @Transactional
+    public ResponseEntity<?> signIn(AuthRequestDTO requestDTO) {
+        Optional<User> optionalUser = userRepository.findByUsername(requestDTO.getUsername());
 
-            String guestId =String.format(GUEST_REDIS_KEY, role.name(), DateUtil.getDate("yyyyMMdd"), CommonUtil.randomUUid(7));
-            // TOKEN 생성
-            String accessToken = jwtProvider.generateAccessToken(guestId);
-            String refreshToken = jwtProvider.getRefreshRedisKey(guestId);
-            stringRedisTemplate.opsForValue().set(jwtProvider.getRefreshRedisKey(guestId), refreshToken, REFRESH_TIMEOUT , TimeUnit.SECONDS);
-
-            redisUtil.set(guestId, "GUEST", Duration.ofSeconds(REFRESH_TIMEOUT));
-            return ApiResponse.SUCCESS(new TokenResponseDto(accessToken, refreshToken));
+        if (!optionalUser.isPresent()) {
+            return ApiResponse.NOT_FOUND(null);
         }
 
-        log.info("role : {} ", role);
+        User user = optionalUser.get();
 
+        String accessToken = jwtProvider.generateAccessToken(new UsernamePasswordAuthenticationToken(new CustomUserDetail(user), user.getPassword()));
+        String refreshToken = jwtProvider.generateRefreshToken(new UsernamePasswordAuthenticationToken(new CustomUserDetail(user), user.getPassword()));
 
-        return ApiResponse.BAD_REQUEST();
+        if (authRepository.existsByUser(user)) {
+            user.getAuth().updateAccessToken(accessToken);
+            user.getAuth().updateRefreshToken(accessToken);
+            return ApiResponse.SUCCESS(user.getAuth());
+        }
+
+        Auth auth = authRepository.save(Auth.builder()
+                .user(user)
+                .tokenType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build());
+
+        return ApiResponse.SUCCESS(auth);
     }
 
-    public ResponseEntity<?> getSession(TokenRequestDto tokenRequestDto) {
-        String accessToken = tokenRequestDto.getAccessToken();
-        String refreshToken = tokenRequestDto.getRefreshToken();
+    /** Token 갱신 */
+    @Transactional
+    public ResponseEntity<ApiResponse> refreshToken(String refreshToken) {
+        String token = jwtProvider.getToken(refreshToken);
 
-        Boolean isExpired = jwtProvider.isTokenExpired(refreshToken);
-
-        if (isExpired) {
+        if (token == null) {
+            log.info("유효하지 않은 토큰 : {} " , refreshToken);
             return ApiResponse.EXPIRED_TOKEN();
         }
 
-        if (!StringUtils.hasText(accessToken)) {
-            return ApiResponse.FORBIDEN();
+        if (jwtProvider.validateToken(refreshToken)) {
+            Auth auth = this.authRepository.findByRefreshToken(refreshToken).orElseThrow(
+                    () -> new IllegalArgumentException("해당 REFRESH_TOKEN 을 찾을 수 없습니다.\nREFRESH_TOKEN = " + refreshToken));
+
+            String newAccessToken = jwtProvider.generateAccessToken(
+                    new UsernamePasswordAuthenticationToken(
+                            new CustomUserDetail(auth.getUser()), auth.getUser().getPassword()));
+
+            auth.updateAccessToken(newAccessToken);
+            return ApiResponse.SUCCESS(newAccessToken);
         }
 
+        return ApiResponse.EXPIRED_TOKEN();
+    }
 
-        return ApiResponse.SUCCESS(new TokenResponseDto(accessToken, refreshToken));
+    public ResponseEntity<?> accessToken(String accessToken) {
+        Boolean isValid = jwtProvider.validateToken(accessToken);
+
+        if (isValid) {
+            ApiResponse.SUCCESS("OK");
+        }
+
+        return ApiResponse.EXPIRED_TOKEN();
     }
 }

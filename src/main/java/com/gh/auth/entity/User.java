@@ -1,31 +1,29 @@
 package com.gh.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gh.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
-@Entity(name = "users")
+@Entity(name = "user")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-public class User implements UserDetails {
+@Getter
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idx;
+    private Long id;
 
-    private String id;
+    @Column(nullable = false, unique = true)
+    private String username;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Column(nullable = false, length = 100)
+    private String password;
 
     private String email;
 
@@ -36,19 +34,24 @@ public class User implements UserDetails {
     private String providerId; // Oauth 제공자 IP
 
     private String profileImage;
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(() -> role.name());
-    }
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
-    @Override
-    public String getUsername() {
-        return null;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Auth auth;
+
+    @Builder
+    public User(String username, String password, String email, String nick, String provider, String providerId, UserRole role) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.nick = nick;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.role = role;
     }
 
     @Override
@@ -56,11 +59,11 @@ public class User implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(idx, user.idx);
+        return Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idx);
+        return Objects.hash(id);
     }
 }

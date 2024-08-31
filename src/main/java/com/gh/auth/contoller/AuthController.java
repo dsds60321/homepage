@@ -1,9 +1,9 @@
 package com.gh.auth.contoller;
 
-import com.gh.auth.dto.SignInReqDto;
-import com.gh.auth.dto.SignUpReqDto;
-import com.gh.auth.dto.TokenRequestDto;
+import com.gh.auth.dto.AuthRequestDTO;
+import com.gh.auth.dto.UserRequestDTO;
 import com.gh.auth.service.AuthService;
+import com.gh.global.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,24 +17,30 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/session")
-    public ResponseEntity<?> session(@RequestBody TokenRequestDto tokenRequestDto) {
-        return authService.getSession(tokenRequestDto);
-    }
-
     /**
-     * 회원가입
+     * 로그인
      */
     @PostMapping("/sign-up")
-    public ResponseEntity<?> singUp(@RequestBody SignUpReqDto requestDto) {
-        return authService.signUp(requestDto);
+    public ResponseEntity<?> singUp(@RequestBody UserRequestDTO userRequestDTO) {
+        return authService.signup(userRequestDTO);
     }
 
     /**
      * 로그인
      */
     @PostMapping("/sign-in")
-    public ResponseEntity<?> singIn(@RequestBody SignInReqDto requestDto) {
-        return authService.signIn(requestDto);
+    public ResponseEntity<?> singIn(@RequestBody AuthRequestDTO authRequestDTO) {
+        return authService.signIn(authRequestDTO);
     }
+
+    @PostMapping("/user")
+    public ResponseEntity<?> getUser() {
+        return ApiResponse.SUCCESS("OK");
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        return authService.refreshToken(refreshToken);
+    }
+
 }

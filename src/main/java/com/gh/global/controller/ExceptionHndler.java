@@ -12,8 +12,6 @@ public class ExceptionHndler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse> handleAll(RuntimeException e) {
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.ERROR(ApiResponseCode.INTERNAL_SERVER_ERROR));
+        return ApiResponse.SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 }
