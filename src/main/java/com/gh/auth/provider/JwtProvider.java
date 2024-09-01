@@ -1,15 +1,19 @@
 package com.gh.auth.provider;
 
 import com.gh.auth.dto.CustomUserDetail;
-import io.jsonwebtoken.*;
-import lombok.AllArgsConstructor;
+import com.gh.auth.dto.UserPayload;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.security.SignatureException;
+import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -27,87 +31,81 @@ public class JwtProvider {
     @Value("${jwt.refresh-time}")
     private long REFRESH_TIMEOUT;   // 7D
 
-    public String generateAccessToken(Authentication authentication) {
-        CustomUserDetail customUserDetails = (CustomUserDetail) authentication.getPrincipal();
-        Date expiryDate = Date.from(Instant.now().plus(ACCESS_TIMEOUT, ChronoUnit.SECONDS));
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    }
+
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            log.error("JWT parsing error: {}", e.getMessage());
+            throw new RuntimeException("JWT parsing error", e);
+        }
+    }
+
+    public String generateToken(Authentication authentication, long timeout) {
+        CustomUserDetail userDetails = (CustomUserDetail) authentication.getPrincipal();
+        Date expiryDate = Date.from(Instant.now().plus(timeout, ChronoUnit.SECONDS));
+
         return Jwts.builder()
-                .setSubject(customUserDetails.getUsername())
-                .claim("user-id", customUserDetails.getId())
-                .claim("user-email", customUserDetails.getEmail())
+                .setSubject(userDetails.getUsername())
+                .claim("id"     , userDetails.getId())
+                .claim("userId" , userDetails.getUsername())
+                .claim("email"  , userDetails.getEmail())
+                .claim("nick"   , userDetails.getNick())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    public String generateAccessToken(Authentication authentication) {
+        return generateToken(authentication, ACCESS_TIMEOUT);
     }
 
     public String generateRefreshToken(Authentication authentication) {
-        CustomUserDetail customUserDetails = (CustomUserDetail) authentication.getPrincipal();
-        Date expiryDate = Date.from(Instant.now().plus(REFRESH_TIMEOUT, ChronoUnit.SECONDS));
-        return Jwts.builder()
-                .setSubject(customUserDetails.getUsername())
-                .claim("user-id", customUserDetails.getId())
-                .claim("user-email", customUserDetails.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
-                .compact();
+        return generateToken(authentication, REFRESH_TIMEOUT);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public Claims getUserFromToken(String token) {
+        return parseClaims(token);
+    }
+
     public Long getUserIdFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .get("user-id", Long.class);
+        return parseClaims(token).get("id", Long.class);
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return parseClaims(token).getSubject();
     }
 
     public String getUserEmailFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .get("user-email", String.class);
+        return parseClaims(token).get("email", String.class);
     }
 
     public Date getExpirationFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
+        return parseClaims(token).getExpiration();
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public Boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
+            parseClaims(token); // This will throw an exception if the token is invalid
             return true;
-        } catch (MalformedJwtException ex) {
-            System.out.println("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            System.out.println("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            System.out.println("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            System.out.println("JWT claims string is empty.");
+        } catch (RuntimeException e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
+            return false;
         }
-        return false;
     }
 
-    public String getToken(String refreshToken) {
-
+    public String getParserToken(String refreshToken) {
         if (StringUtils.hasText(refreshToken) && refreshToken.length() > 7) {
             return refreshToken.substring(7).trim();
         }
-
         return null;
     }
 }

@@ -10,6 +10,7 @@ import com.gh.auth.provider.JwtProvider;
 import com.gh.auth.repository.AuthRepository;
 import com.gh.auth.repository.UserRepository;
 import com.gh.global.dto.response.ApiResponse;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -75,7 +76,7 @@ public class AuthService {
     /** Token 갱신 */
     @Transactional
     public ResponseEntity<ApiResponse> refreshToken(String refreshToken) {
-        String token = jwtProvider.getToken(refreshToken);
+        String token = jwtProvider.getParserToken(refreshToken);
 
         if (token == null) {
             log.info("유효하지 않은 토큰 : {} " , refreshToken);
@@ -98,12 +99,18 @@ public class AuthService {
     }
 
     public ResponseEntity<?> accessToken(String accessToken) {
-        Boolean isValid = jwtProvider.validateToken(accessToken);
+        String token = jwtProvider.getParserToken(accessToken);
+        Boolean isValid = jwtProvider.validateToken(token);
 
         if (isValid) {
-            ApiResponse.SUCCESS("OK");
+            Claims claim = jwtProvider.getUserFromToken(token);
+            System.out.println(claim);
+            return ApiResponse.SUCCESS(claim);
         }
+
+
 
         return ApiResponse.EXPIRED_TOKEN();
     }
+
 }

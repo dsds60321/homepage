@@ -34,8 +34,8 @@ public class AuthController {
     }
 
     @PostMapping("/user")
-    public ResponseEntity<?> getUser() {
-        return ApiResponse.SUCCESS("OK");
+    public ResponseEntity<?> accessToken(@RequestHeader("Authorization") String accessToken) {
+        return authService.accessToken(accessToken);
     }
 
     @PostMapping("/refresh-token")

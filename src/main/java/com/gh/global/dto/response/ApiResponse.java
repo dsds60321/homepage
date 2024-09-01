@@ -36,6 +36,7 @@ public class ApiResponse<T> {
         return ResponseEntity.badRequest().body(response);
     }
 
+
     public static <T> ResponseEntity<ApiResponse> FORBIDEN() {
         ApiResponse<T> response = ApiResponse.<T>builder()
                 .code(ApiResponseCode.FORBIDEN.getCode())
@@ -53,7 +54,7 @@ public class ApiResponse<T> {
                 .result(null)
                 .build();
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     public static <T> ResponseEntity<ApiResponse> NOT_FOUND(T data) {
