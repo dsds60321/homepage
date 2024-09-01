@@ -36,6 +36,16 @@ public class ApiResponse<T> {
         return ResponseEntity.badRequest().body(response);
     }
 
+    public static <T> ResponseEntity<ApiResponse> BAD_REQUEST(String message) {
+        ApiResponse<T> response = ApiResponse.<T>builder()
+                .code(ApiResponseCode.BAD_REQUEST.getCode())
+                .message(message)
+                .result(null)
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
 
     public static <T> ResponseEntity<ApiResponse> FORBIDEN() {
         ApiResponse<T> response = ApiResponse.<T>builder()

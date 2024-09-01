@@ -49,10 +49,15 @@ public class AuthService {
         Optional<User> optionalUser = userRepository.findByUsername(requestDTO.getUsername());
 
         if (!optionalUser.isPresent()) {
-            return ApiResponse.NOT_FOUND(null);
+            return ApiResponse.BAD_REQUEST("아이디 또는 비밀번호가 잘못 되었습니다. 아이디와 비밀번호를 정확히 입력해주세요.");
         }
 
         User user = optionalUser.get();
+
+        if (!passwordEncoder.matches(requestDTO.getPassword(), user.getPassword())) {
+            return ApiResponse.BAD_REQUEST("아이디 또는 비밀번호가 잘못 되었습니다. 아이디와 비밀번호를 정확히 입력해주세요.");
+        }
+
 
         String accessToken = jwtProvider.generateAccessToken(new UsernamePasswordAuthenticationToken(new CustomUserDetail(user), user.getPassword()));
         String refreshToken = jwtProvider.generateRefreshToken(new UsernamePasswordAuthenticationToken(new CustomUserDetail(user), user.getPassword()));
