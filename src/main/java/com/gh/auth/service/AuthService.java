@@ -10,7 +10,6 @@ import com.gh.auth.repository.UserRepository;
 import com.gh.global.dto.response.ApiResponse;
 import com.gh.global.service.MailService;
 import io.jsonwebtoken.Claims;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @RequiredArgsConstructor

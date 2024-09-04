@@ -6,11 +6,10 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class MailService {
@@ -27,7 +26,7 @@ public class MailService {
     private final StringRedisTemplate stringRedisTemplate;
     private final long AUTH_TTL = 5;
 
-    private static final String senderEmail = "gunhodev1@gmail.com";
+//    private static final String senderEmail = "gunhodev1@gmail.com";
 
     // 랜덤으로 숫자 생성
     private String createNumber() {
@@ -69,7 +68,7 @@ public class MailService {
         MimeMessage message = javaMailSender.createMimeMessage();
 
         try {
-            message.setFrom(senderEmail);
+            message.setFrom("gunhodev1@gmail.com");
             message.setRecipients(MimeMessage.RecipientType.TO, mail);
             message.setSubject("GUNHO.DEV 이메일 인증");
             String body = mailTemplate;
