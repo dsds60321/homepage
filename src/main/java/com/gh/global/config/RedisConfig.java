@@ -18,12 +18,11 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<?, ?> redisTemplate() {
+    public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
         redisTemplate.setConnectionFactory(redisConnectionFactory());
-        redisTemplate.setDefaultSerializer(RedisSerializer.json());
-        redisTemplate.setKeySerializer(RedisSerializer.json());   // Key: String
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));  // Value: 직렬화에 사용할 Object 사용하기
         return redisTemplate;
     }
 

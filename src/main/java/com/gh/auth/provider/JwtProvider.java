@@ -1,7 +1,6 @@
 package com.gh.auth.provider;
 
 import com.gh.auth.dto.CustomUserDetail;
-import com.gh.auth.dto.UserPayload;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -60,7 +59,7 @@ public class JwtProvider {
                 .claim("nick"   , userDetails.getNick())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 

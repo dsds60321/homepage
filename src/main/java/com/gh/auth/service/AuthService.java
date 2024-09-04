@@ -1,8 +1,6 @@
 package com.gh.auth.service;
 
-import com.gh.auth.dto.AuthRequestDTO;
-import com.gh.auth.dto.CustomUserDetail;
-import com.gh.auth.dto.UserRequestDTO;
+import com.gh.auth.dto.*;
 import com.gh.auth.entity.Auth;
 import com.gh.auth.entity.User;
 import com.gh.auth.entity.UserRole;
@@ -10,15 +8,20 @@ import com.gh.auth.provider.JwtProvider;
 import com.gh.auth.repository.AuthRepository;
 import com.gh.auth.repository.UserRepository;
 import com.gh.global.dto.response.ApiResponse;
+import com.gh.global.service.MailService;
 import io.jsonwebtoken.Claims;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -30,22 +33,34 @@ public class AuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
+    private final StringRedisTemplate stringRedisTemplate;
+
 
 
     /** 회원가입 */
     @Transactional
     public ResponseEntity<?> signup(UserRequestDTO requestDto) {
+
+        boolean existUser = userRepository.existsByUsernameOrEmail(requestDto.getUsername(), requestDto.getEmail());
+
+        if (existUser) {
+            return ApiResponse.BAD_REQUEST("이미 등록된 아이디 혹은 이메일이 있습니다.");
+        }
+
         // SAVE USER ENTITY
         requestDto.setUserRole(UserRole.ROLE_USER);
+
         requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         this.userRepository.save(requestDto.toEntity());
 
-        return ApiResponse.SUCCESS(requestDto);
+        return ApiResponse.SUCCESS("회원가입에 성공했습니다.");
     }
 
     // 로그인
     @Transactional
     public ResponseEntity<?> signIn(AuthRequestDTO requestDTO) {
+
         Optional<User> optionalUser = userRepository.findByUsername(requestDTO.getUsername());
 
         if (!optionalUser.isPresent()) {
@@ -113,9 +128,35 @@ public class AuthService {
             return ApiResponse.SUCCESS(claim);
         }
 
-
-
         return ApiResponse.EXPIRED_TOKEN();
     }
 
+    public ResponseEntity<?> sendTempMail(TempMailRequestDTO requestDTO)  {
+
+        if (userRepository.existsByEmail(requestDTO.getEmail())) {
+            return ApiResponse.BAD_REQUEST("이미 등록된 이메일 입니다.");
+        }
+
+        if (!StringUtils.hasText(requestDTO.getCsrf())) {
+            return ApiResponse.BAD_REQUEST();
+        }
+
+        return mailService.sendSimpleMessage(requestDTO.getEmail());
+    }
+
+    // 메일 2차인증 확인
+    public ResponseEntity<?> verifyEmailAuth(EmailAuthRequestDTO emailAuthRequestDTO) {
+        String email = emailAuthRequestDTO.getEmail();
+        String redisAuthNo = stringRedisTemplate.opsForValue().get(email);
+
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(email))) {
+            return ApiResponse.BAD_REQUEST("인증 요청 시간이 초과 되었습니다.");
+        }
+
+        if (redisAuthNo.equals(emailAuthRequestDTO.getAuthNo())) {
+            return ApiResponse.SUCCESS("인증에 성공했습니다.");
+        }
+
+        return ApiResponse.BAD_REQUEST("인증 번호가 다릅니다. 확인 후 다시 입력해주세요.");
+    }
 }
