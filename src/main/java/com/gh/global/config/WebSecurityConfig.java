@@ -48,7 +48,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // 새로고침시 헤더에 세션정보가 안들어와 오류 -> 세션 생성으로 일단 해결
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers( "/" , "/error", "/index.html", "/auth/**", "/assets/**", "/static/**", "favicon.ico").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers( "/" , "/error", "/index.html", "/auth/**", "/auth/sign-up","/assets/**", "/static/**", "favicon.ico").permitAll() // 인증 없이 접근 가능
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // 정적 리소스 접근 허용
                         .anyRequest().authenticated()) // 모든 요청 허용
                 .exceptionHandling(exceptionHandling ->
@@ -62,7 +62,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     protected CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:3000");
         corsConfiguration.addAllowedMethod("OPTIONS");
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
