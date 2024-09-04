@@ -1,7 +1,7 @@
 package com.gh.facade;
 
-import com.gh.util.ParamUtil;
-import com.gh.util.WebClientUtil;
+import com.gh.global.util.ParamUtil;
+import com.gh.global.util.WebClientUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
