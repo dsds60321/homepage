@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,7 +18,7 @@ import java.nio.file.Paths;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-@Component
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class MailService {
